@@ -194,11 +194,20 @@ async function verifyGoogleCredential(credential) {
 
   const payload = await response.json();
 
+  console.log("GOOGLE TOKEN PAYLOAD:", payload);
+
   if (GOOGLE_CLIENT_ID && payload.aud !== GOOGLE_CLIENT_ID) {
     throw new Error("Google client ID mismatch");
   }
 
-  if (!payload.email || payload.email_verified !== "true") {
+  // ✅ production-safe email verification
+  const isVerified =
+    payload.email_verified === true ||
+    payload.email_verified === "true" ||
+    payload.email_verified === 1 ||
+    payload.email_verified === "1";
+
+  if (!payload.email || !isVerified) {
     throw new Error("Google email is not verified");
   }
 
@@ -304,8 +313,14 @@ app.get("/me", verifyToken, async (req, res) => {
 
 app.post("/google-login", async (req, res) => {
   try {
+    console.log("Google login route hit");
+
     const { credential } = req.body;
+    console.log("Has credential:", !!credential);
+
     const googleUser = await verifyGoogleCredential(credential);
+    console.log("Verified Google user:", googleUser.email);
+
     const gmail = googleUser.email.trim().toLowerCase();
 
     const existingUser = await getUserByGmail(gmail);
@@ -347,7 +362,9 @@ app.post("/google-login", async (req, res) => {
     });
   } catch (error) {
     console.error("GOOGLE LOGIN ERROR:", error);
-    return res.status(401).json({ message: error.message || "Google login failed" });
+    return res.status(401).json({
+      message: error.message || "Google login failed",
+    });
   }
 });
 
