@@ -312,14 +312,8 @@ app.get("/me", verifyToken, async (req, res) => {
 
 app.post("/google-login", async (req, res) => {
   try {
-    console.log("Google login route hit");
-
     const { credential } = req.body;
-    console.log("Has credential:", !!credential);
-
     const googleUser = await verifyGoogleCredential(credential);
-    console.log("Verified Google user:", googleUser.email);
-
     const gmail = googleUser.email.trim().toLowerCase();
 
     const existingUser = await getUserByGmail(gmail);
@@ -360,9 +354,10 @@ app.post("/google-login", async (req, res) => {
       gmail,
     });
   } catch (error) {
-    console.error("GOOGLE LOGIN ERROR:", error);
+    console.error("GOOGLE LOGIN ERROR FULL:", error);
     return res.status(401).json({
-      message: error.message || "Google login failed",
+      message: error?.message || "Google login failed",
+      debug: String(error),
     });
   }
 });
