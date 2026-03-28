@@ -121,8 +121,8 @@ function Shop() {
 
     try {
       setLoadingPurchase(true);
-
-      const response = await fetch("http://localhost:5000/buy-coins", {
+      const API_BASE_URL = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${API_BASE_URL}/buy-coins`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
