@@ -6,6 +6,7 @@ const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const db = require("./db");
 require("dotenv").config();
+const { OAuth2Client } = require("google-auth-library");
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 const HINT_KEYS = [
   "neonMagnet",
@@ -184,33 +186,31 @@ async function verifyGoogleCredential(credential) {
     throw new Error("Missing Google credential");
   }
 
-  const response = await fetch(
-    `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`
-  );
+  const ticket = await googleClient.verifyIdToken({
+    idToken: credential,
+    audience: GOOGLE_CLIENT_ID,
+  });
 
-  if (!response.ok) {
-    throw new Error("Invalid Google token");
-  }
+  const payload = ticket.getPayload();
 
-  const payload = await response.json();
-
-  console.log("GOOGLE TOKEN PAYLOAD:", payload);
-
-  if (GOOGLE_CLIENT_ID && payload.aud !== GOOGLE_CLIENT_ID) {
-    throw new Error("Google client ID mismatch");
+  if (!payload) {
+    throw new Error("Invalid Google token payload");
   }
 
   const isVerified =
     payload.email_verified === true ||
-    payload.email_verified === "true" ||
-    payload.email_verified === 1 ||
-    payload.email_verified === "1";
+    payload.email_verified === "true";
 
   if (!payload.email || !isVerified) {
     throw new Error("Google email is not verified");
   }
 
-  return payload;
+  return {
+    email: payload.email,
+    sub: payload.sub,
+    picture: payload.picture || "",
+    name: payload.name || "",
+  };
 }
 
 function buildWalletAggregateKey(type, details = {}) {
@@ -315,6 +315,8 @@ app.post("/google-login", async (req, res) => {
     const { credential } = req.body;
     const googleUser = await verifyGoogleCredential(credential);
     const gmail = googleUser.email.trim().toLowerCase();
+    console.log("Google login route hit");
+    console.log("GOOGLE_CLIENT_ID:", GOOGLE_CLIENT_ID);
 
     const existingUser = await getUserByGmail(gmail);
 
@@ -354,12 +356,11 @@ app.post("/google-login", async (req, res) => {
       gmail,
     });
   } catch (error) {
-    console.error("GOOGLE LOGIN ERROR FULL:", error);
-    return res.status(401).json({
-      message: error?.message || "Google login failed",
-      debug: String(error),
-    });
-  }
+  console.error("GOOGLE LOGIN ERROR FULL:", error);
+  return res.status(401).json({
+    message: error?.message || "Google login failed",
+  });
+}
 });
 
 app.post("/google-complete-profile", async (req, res) => {
