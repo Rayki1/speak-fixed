@@ -1,1 +1,0 @@
-import{r as a}from"./vendor-react-DyGG4kxI.js";function c(t=.5){const r=a.useRef(null);return a.useCallback(()=>{try{r.current||(r.current=new Audio("/taptap.m4a")),r.current.volume=t,r.current.currentTime=0,r.current.play().catch(()=>{})}catch{}},[t])}export{c as u};

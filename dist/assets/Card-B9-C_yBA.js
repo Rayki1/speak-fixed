@@ -1,1 +1,0 @@
-import{j as r}from"./vendor-react-DyGG4kxI.js";function o({title:s,children:e,className:t=""}){return r.jsxs("div",{className:`rounded-lg shadow-lg bg-gray-800 text-white p-6 ${t}`,children:[s&&r.jsx("h3",{className:"text-xl font-bold mb-4",children:s}),e]})}export{o as C};

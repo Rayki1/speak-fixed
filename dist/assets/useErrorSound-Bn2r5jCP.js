@@ -1,1 +1,0 @@
-import{r as t}from"./vendor-react-DyGG4kxI.js";function n(e=.6){const r=t.useRef(null);return t.useCallback(()=>{try{r.current||(r.current=new Audio("/error.mp3")),r.current.volume=e,r.current.currentTime=0,r.current.play().catch(()=>{})}catch{}},[e])}export{n as u};
