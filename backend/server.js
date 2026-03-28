@@ -200,7 +200,6 @@ async function verifyGoogleCredential(credential) {
     throw new Error("Google client ID mismatch");
   }
 
-  // ✅ production-safe email verification
   const isVerified =
     payload.email_verified === true ||
     payload.email_verified === "true" ||
