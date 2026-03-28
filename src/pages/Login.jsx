@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Button from "../components/Button";
 import { UserContext } from "../context/UserContext";
+const API_URL = import.meta.env.VITE_API_URL;
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -94,13 +95,13 @@ function Login() {
     const directUser = data?.user || data?.userData || data?.profile || null;
     if (token) {
       try {
-        const profileRes = await fetch("http://localhost:5000/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const profileData = await profileRes.json();
-        if (profileRes.ok && profileData?.user) {
-          return profileData.user;
-        }
+  const profileRes = await fetch(`${API_URL}/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const profileData = await profileRes.json();
+  if (profileRes.ok && profileData?.user) {
+    return profileData.user;
+  }
       } catch {
         // fall back to direct payload if /me fails
       }
@@ -152,12 +153,12 @@ function Login() {
     setLoading(true);
     setError("");
 
-    try {
-      const res = await fetch("http://localhost:5000/google-login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ credential: response.credential }),
-      });
+   try {
+  const res = await fetch(`${API_URL}/google-login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ credential: response.credential }),
+  });
 
       const data = await res.json();
 
@@ -217,11 +218,11 @@ function Login() {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:5000/google-complete-profile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ signupToken, username }),
-      });
+  const res = await fetch(`${API_URL}/google-complete-profile`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ signupToken, username }),
+  });
 
       const data = await res.json();
 
